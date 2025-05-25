@@ -10,7 +10,7 @@ def cargar_modelo():
 
 @st.cache_data
 def cargar_clases():
-    with open("modelo/clases.json", "r") as f:
+    with open("clases.json", "r") as f:
         return json.load(f)
 
 modelo = cargar_modelo()
