@@ -7,11 +7,11 @@ import json
 # Cargar modelo y clases
 @st.cache_resource
 def cargar_modelo():
-    return tf.keras.models.load_model("modelo/keras_model.h5")  # CORREGIDO
+    return tf.keras.models.load_model("keras_model.h5")  # CORREGIDO
 
 @st.cache_data
 def cargar_clases():
-    with open("modelo/clases.json", "r") as f:
+    with open("clases.json", "r") as f:
         return json.load(f)
 
 try:
