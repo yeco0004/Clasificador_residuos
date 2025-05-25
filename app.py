@@ -6,7 +6,7 @@ import json
 
 @st.cache_resource
 def cargar_modelo():
-    return tf.keras.models.load_model("modelo/keras_model.h5")
+    return tf.keras.models.load_model("keras_model.h5")
 
 @st.cache_data
 def cargar_clases():
