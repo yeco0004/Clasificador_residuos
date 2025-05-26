@@ -1,23 +1,37 @@
 import streamlit as st
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+import json
 
-def main():
-    if "show_button" not in st.session_state:
-        st.session_state.show_button = True
+@st.cache_resource
+def cargar_modelo():
+    return tf.keras.models.load_model("modelo/keras_model.h5")
 
-    st.checkbox("Mostrar botón", key="show_button")
+@st.cache_data
+def cargar_clases():
+    with open("modelo/clases.json", "r") as f:
+        return json.load(f)
 
-    # Siempre renderizamos ambos widgets (o al menos mantenemos el espacio)
-    col1, col2 = st.columns(2)
+modelo = cargar_modelo()
+CLASES = cargar_clases()
 
-    with col1:
-        if st.session_state.show_button:
-            if st.button("Botón visible"):
-                st.write("Botón visible presionado")
-        else:
-            st.write("Botón oculto")
+st.title("♻️ Clasificador de Residuos")
 
-    with col2:
-        st.write("Otro contenido estable")
+archivo = st.file_uploader("Sube una imagen", type=["jpg", "jpeg", "png"])
 
-if __name__ == "__main__":
-    main()
+if archivo is not None:
+    try:
+        imagen = Image.open(archivo).convert("RGB")
+        imagen = imagen.resize((150, 150))
+        arr = np.array(imagen) / 255.0
+        arr = np.expand_dims(arr, axis=0)
+
+        pred = modelo.predict(arr)
+        indice = np.argmax(pred)
+        confianza = np.max(pred) * 100
+
+        st.success(f"✅ Predicción: {CLASES[str(indice)]}")
+        st.info(f"🔍 Confianza: {confianza:.2f}%")
+    except Exception as e:
+        st.error(f"❌ Error procesando la imagen: {e}")
