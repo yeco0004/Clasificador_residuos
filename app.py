@@ -1,34 +1,23 @@
 import streamlit as st
-import tensorflow as tf
-from PIL import Image
-import numpy as np
 
-# Cachear el modelo para cargarlo solo una vez
-@st.cache_resource
-def load_model():
-    return tf.keras.models.load_model("model/trained_model.h5")
+def main():
+    if "show_button" not in st.session_state:
+        st.session_state.show_button = True
 
-model = load_model()
+    st.checkbox("Mostrar botón", key="show_button")
 
-# Títulos y descripción
-st.title("Clasificador de Residuos ♻️")
-st.write("Sube una imagen de un residuo para clasificarlo")
+    # Siempre renderizamos ambos widgets (o al menos mantenemos el espacio)
+    col1, col2 = st.columns(2)
 
-# Widget para subir imágenes
-uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "png"])
+    with col1:
+        if st.session_state.show_button:
+            if st.button("Botón visible"):
+                st.write("Botón visible presionado")
+        else:
+            st.write("Botón oculto")
 
-if uploaded_file is not None:
-    # Preprocesamiento
-    image = Image.open(uploaded_file).convert("RGB")
-    image = image.resize((224, 224))  # Ajustar al tamaño que requiera el modelo
-    img_array = np.array(image) / 255.0  # Normalización
-    img_array = np.expand_dims(img_array, axis=0)
+    with col2:
+        st.write("Otro contenido estable")
 
-    # Predicción
-    prediction = model.predict(img_array)
-    class_idx = np.argmax(prediction[0])
-    classes = ["Orgánico", "Plástico", "Vidrio", "Papel"]  # Ajustar según las clases del modelo
-
-    # Mostrar resultados
-    st.image(image, caption="Imagen subida", use_column_width=True)
-    st.success(f"Predicción: {classes[class_idx]} (Confianza: {prediction[0][class_idx]:.2f})")
+if __name__ == "__main__":
+    main()
