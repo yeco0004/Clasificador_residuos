@@ -1,3 +1,4 @@
+streamlit==1.27.2
 TensorFlow: 2.18.0
 NumPy: 2.0.2
 Pillow: 11.2.1
