@@ -1,39 +1,34 @@
 import streamlit as st
 import tensorflow as tf
-import numpy as np
 from PIL import Image
-import json
+import numpy as np
 
+# Cachear el modelo para cargarlo solo una vez
 @st.cache_resource
-def cargar_modelo():
-    return tf.keras.models.load_model("keras_model.h5")
+def load_model():
+    return tf.keras.models.load_model("model/trained_model.h5")
 
-@st.cache_data
-def cargar_clases():
-    with open("clases.json", "r") as f:
-        return json.load(f)
+model = load_model()
 
-modelo = cargar_modelo()
-CLASES = cargar_clases()
+# Títulos y descripción
+st.title("Clasificador de Residuos ♻️")
+st.write("Sube una imagen de un residuo para clasificarlo")
 
-st.title("♻️ Clasificador de Residuos")
+# Widget para subir imágenes
+uploaded_file = st.file_uploader("Elige una imagen...", type=["jpg", "png"])
 
-archivo = st.file_uploader("Sube una imagen", type=["jpg", "jpeg", "png"])
+if uploaded_file is not None:
+    # Preprocesamiento
+    image = Image.open(uploaded_file).convert("RGB")
+    image = image.resize((224, 224))  # Ajustar al tamaño que requiera el modelo
+    img_array = np.array(image) / 255.0  # Normalización
+    img_array = np.expand_dims(img_array, axis=0)
 
-if archivo is not None:
-    try:
-        imagen = Image.open(archivo).convert("RGB")
-        imagen = imagen.resize((150, 150))
-        arr = np.array(imagen) / 255.0
-        arr = np.expand_dims(arr, axis=0)
+    # Predicción
+    prediction = model.predict(img_array)
+    class_idx = np.argmax(prediction[0])
+    classes = ["Orgánico", "Plástico", "Vidrio", "Papel"]  # Ajustar según las clases del modelo
 
-        pred = modelo.predict(arr)
-        indice = np.argmax(pred)
-        confianza = np.max(pred) * 100
-
-        st.success(f"✅ Predicción: {CLASES[str(indice)]}")
-        st.info(f"🔍 Confianza: {confianza:.2f}%")
-    except Exception as e:
-        st.error(f"❌ Error procesando la imagen: {e}")
-
-
+    # Mostrar resultados
+    st.image(image, caption="Imagen subida", use_column_width=True)
+    st.success(f"Predicción: {classes[class_idx]} (Confianza: {prediction[0][class_idx]:.2f})")
